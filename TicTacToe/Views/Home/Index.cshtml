@@ -1,0 +1,462 @@
+﻿@model TicTacToe.Controllers.Veri
+@{
+    ViewBag.Title = "Index";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    
+}
+<script type="text/javascript">
+    var messagehub = $.connection.ticTac;    
+
+    $(document).ready(function () {
+
+        $(document).bind('keydown', function (event) {
+            if (event.ctrlKey && event.altKey && event.shiftKey && event.which == 68)                
+                if ($('#tdClear').is(':hidden') == true) {
+                    $("#tdClear").show();
+                }
+                else { $("#tdClear").hide(); }
+        });
+
+        $('#hdnPlayerID').val('@ViewBag.PlayerID')
+        $('#hdnPlayerEnter').val('@ViewBag.PlayerID')
+        
+        if ($('#hdnPlayerID').val().trim() != "") {
+            if ($('#hdnPlayerID').val().trim() == 1) {
+                $("#txt1").hide();
+                $("#btnPlayer1").val("Oyundan Çık");
+                $("#btnPlayer2").hide();
+                $("#td2").hide();
+                $("#Name1").html('Player 1 ==> [@ViewBag.PlayerCookie]');               
+                @if (Model.Player.Count > 1)
+                {
+                    string secondName = "";
+                    if (Model.Player.ElementAt(0).Split('æ')[0] == ViewBag.realPlayerCookie)
+                    {
+                        secondName = Model.Player.ElementAt(1).Split('æ')[0];                            
+                    }
+                    else
+                    {
+                        secondName = Model.Player.ElementAt(0).Split('æ')[0];
+                    }       
+                    <text>
+                        $("#td2").show();
+                        $("#txt2").hide();
+                        $("#btnPlayer2").val("Oyundan Çık");
+                        $("#td1").show();
+                        $("#Name2").html('Player 2 ==> [@secondName]');
+                    </text>
+                }
+            }
+            else if ($('#hdnPlayerID').val().trim() == 2) {
+                $("#txt2").hide();
+                $("#btnPlayer2").val("Oyundan Çık");
+                $("#btnPlayer1").hide();
+                $("#td1").hide();
+                $("#Name2").html('Player 2 ==> [@ViewBag.PlayerCookie]');
+                @if (Model.Player.Count > 1)
+                {
+                    string secondName = "";
+                    if (Model.Player.ElementAt(0).Split('æ')[0] == ViewBag.realPlayerCookie)
+                    {
+                        secondName = Model.Player.ElementAt(1).Split('æ')[0];
+                    }
+                    else
+                    {
+                        secondName = Model.Player.ElementAt(0).Split('æ')[0];
+                    }       
+                    
+                    <text>
+                        $("#td1").show();
+                        $("#txt1").hide();
+                        $("#btnPlayer1").val("Oyundan Çık");
+                        $("#td2").show();
+                        $("#Name1").html('Player 1 ==> [@secondName]');
+                    </text>
+                }
+            }
+        }
+        else {
+            @if (Model.Player.Count > 1)
+             {
+                 
+                <text>
+                    $("#txt1").hide();
+                    $("#btnPlayer1").hide();
+                    $("#Name1").html('Player 1 ==> [@Model.Player.ElementAt(0).Split('æ')[0]]');
+                    $("#txt2").hide();
+                    $("#btnPlayer2").hide();
+                    $("#Name2").html('Player 2 ==> [@Model.Player.ElementAt(1).Split('æ')[0]]');
+                </text>                                    
+             }
+            else if (Model.Player.Count > 0)
+            {
+                if (Model.Player != null && Model.Player.FirstOrDefault().ToString().Split('æ')[1] == "1")
+                {
+                    <text>
+                        $("#txt1").hide();
+                        $("#btnPlayer1").hide();
+                        $("#Name1").html('Player 1 ==> [@Model.Player.FirstOrDefault().ToString().Split('æ')[0]]');
+                    </text>
+                }
+                else if (Model.Player != null && Model.Player.FirstOrDefault().ToString().Split('æ')[1] == "2")
+                {
+                    <text>
+                        $("#txt2").hide();
+                        $("#btnPlayer2").hide();
+                        $("#Name2").html('Player 2 ==> [@Model.Player.FirstOrDefault().ToString().Split('æ')[0]]');
+                    </text>
+                }
+            }
+        }
+        $("#btnPlayer1").click(function () {
+            if ($(this).val() == "Oyuna Gir") {
+                //setNick(1);
+                var player1 = $("#txt1").val().trim();
+                $("#hdnPlayerEnter").val('1')
+                messagehub.server.saveCookie(player1, 1);
+            }
+            else if ($(this).val() == "Oyundan Çık") {
+                //delNick(1);                
+                if ($('#txt2').is(':hidden') == false) {                    
+                    $("#btnPlayer2").val("Oyuna Gir");
+                    $("#btnPlayer2").show();
+                }
+                messagehub.server.delCookie(1);
+            }
+        });
+        $("#btnPlayer2").click(function () {
+            if ($(this).val() == "Oyuna Gir") {
+                //setNick(2);
+                var player2 = $("#txt2").val().trim();
+                $("#hdnPlayerEnter").val('2')
+                messagehub.server.saveCookie(player2, 2);
+            }
+            else if ($(this).val() == "Oyundan Çık") {
+                //delNick(2);
+                if ($('#txt1').is(':hidden') == false) {
+                    $("#btnPlayer1").val("Oyuna Gir");
+                    $("#btnPlayer1").show();
+                }
+                messagehub.server.delCookie(2);
+            }
+        });
+
+        $("#btnClear").click(function () {          
+            messagehub.server.clearMem();
+        });
+
+        messagehub.client.clearCookie = function () {
+            messagehub.server.delAllCookie();
+        }
+        messagehub.client.clearPage = function () {
+                    
+            $("#td1").show();
+            $("#td2").show();
+            $('#txt1').show();
+            $('#txt2').show();
+            $('#txt1').val('');
+            $('#txt2').val('');
+            $("#btnPlayer1").val("Oyuna Gir");
+            $("#btnPlayer1").show();
+            $("#btnPlayer2").val("Oyuna Gir");
+            $("#btnPlayer2").show();
+            $("#Name1").html('Player 1');
+            $("#Name2").html('Player 2');
+            $("hdnIP").val('');
+            $("hdnPlayerID").val('');
+            $("hdnPlayerEnter").val('');
+            $("#tdClear").hide();
+        }
+
+        $('#txt1').focus();
+        @if (Model.Xmoves != null)
+        {
+            foreach (string mov in Model.Xmoves)
+            {
+                @: var id = "img" + "@mov";
+                                @: $("#" + id).attr("src", "/content/x.gif");
+                            }
+        }
+        @if (Model.Omoves != null)
+        {
+            foreach (string mov2 in Model.Omoves)
+            {
+                @: var id = "img" + "@mov2";
+                                @: $("#" + id).attr("src", "/content/o.gif");
+                            }
+        }
+        @if (Model.MoveType != 0)
+        {
+            @:$('#hdnIP').val('@Model.MoveType'); 
+        }
+        $('a').each(function () {
+            $(this).click(function () {
+                if ($("#hdnPlayerEnter").val().trim() != "") {
+                    var moveType;
+                    if ($("#hdnIP").val() == "") {
+                        moveType = "1";
+                    }
+                    else { moveType = $('#hdnIP').val() == "1" ? "2" : "1"; }                  
+                    if (moveType == $("#hdnPlayerEnter").val()) {
+                        //insertMove($(this).attr('id'));                        
+                        var type = $('#hdnIP').val() == "1" ? "2" : "1";
+                        //if (type == '') { type = 1; } //ilk başlayan X'dir.                
+                        messagehub.server.checkMove($(this).attr('id'), type);
+                    }
+                }
+                return false;
+            })
+        });
+    });
+
+    messagehub.client.insertMove = function (idA, result, doIT, moveType) {
+        if (doIT) {
+            /*
+            if ($('#hdnIP').val() == '') { $('#hdnIP').val('1'); }
+            else if ($('#hdnIP').val() == '1')
+            { $('#hdnIP').val('2'); }
+            else if ($('#hdnIP').val() == '2')
+            { $('#hdnIP').val('1'); }
+            */
+            $('#hdnIP').val(moveType);
+
+            var id = 'img' + idA
+            if ($('#hdnIP').val() == '1')
+            { $('#' + id).attr('src', '/content/x.gif'); }
+            else if ($('#hdnIP').val() == '2')
+            { $('#' + id).attr('src', '/content/o.gif'); }
+
+            if (result == 1) {
+                alert("Kazanan :" + $('#hdnIP').val() + ".Oyuncu");
+                $('img[id^="img"]').each(function () {
+                    $(this).attr('src', '/content/b.gif');
+                });
+                $('#hdnIP').val('');
+            }
+            if (result == 2) {
+                alert("Berabere Kaldınız");
+                $('img[id^="img"]').each(function () {
+                    $(this).attr('src', '/content/b.gif');
+                });
+                $('#hdnIP').val('');
+            }
+        }
+    }
+
+    messagehub.client.setNick = function (playerID, name) {
+        $('#hdnPlayerID').val(playerID);
+        var doIT = $("#hdnPlayerEnter").val();
+        if (playerID == 1 && name != "") {
+            $("#txt1").hide();
+            $("#btnPlayer1").val("Oyundan Çık");
+
+            if (doIT != "" && $('#txt2').is(':hidden') == false) {
+                $("#btnPlayer2").hide();
+                $("#td2").hide();
+            }
+            else if (doIT == "") {
+                $("#btnPlayer1").hide();
+            }
+            if (doIT != "" && $('#txt1').is(':hidden') == true) {
+                $("#td1").show();
+            }
+            $("#Name1").html('Player 1 ==> [' + name.toUpperCase() + ']');
+        }
+        else if (playerID == 2 && name != "") {
+            $("#txt2").hide();
+            $("#btnPlayer2").val("Oyundan Çık");
+
+            if (doIT != "" && $('#txt1').is(':hidden') == false) {
+                $("#btnPlayer1").hide();
+                $("#td1").hide();
+            }
+            else if (doIT == "") {
+                $("#btnPlayer2").hide();
+            }
+            if (doIT != "" && $('#txt2').is(':hidden') == true) {
+                $("#td2").show();
+            }
+            $("#Name2").html('Player 2 ==> [' + name.toUpperCase() + ']');
+        }
+    }
+    messagehub.client.delNick = function (playerID) {
+        $('#hdnPlayerID').val('');
+        $('#hdnPlayerEnter').val('');
+
+        if (playerID == 1) {           
+            $("#txt1").show();
+            $("#txt1").val('');
+            if ($("#btnPlayer2").is(':hidden') == true || $("#btnPlayer2").is(':hidden') == false && $("#btnPlayer2").val() == 'Oyuna Gir') {
+                $("#btnPlayer1").show();
+            }
+            $("#btnPlayer1").val("Oyuna Gir");
+            //$("#btnPlayer2").show();
+            $("#td2").show();
+            $("#Name1").html('Player 1');
+
+            $('img[id^="img"]').each(function () {
+                $(this).attr('src', '/content/b.gif');
+            });
+            $('#hdnIP').val('');
+            $('#hdnPlayerEnter').val('');
+            if ($('#txt2').is(':hidden') == false) {                
+                $("#btnPlayer1").val("Oyuna Gir");
+                $("#btnPlayer1").show();
+            }
+        }
+        else if (playerID == 2) {
+            $("#txt2").show();
+            $("#txt2").val('');
+            if ($("#btnPlayer1").is(':hidden') == true || $("#btnPlayer1").is(':hidden') == false && $("#btnPlayer1").val() == 'Oyuna Gir') {
+                $("#btnPlayer2").show();
+            }
+            $("#btnPlayer2").val("Oyuna Gir");
+            //$("#btnPlayer1").show();
+            $("#td1").show();
+            $("#Name2").html('Player 2');
+
+            $('img[id^="img"]').each(function () {
+                $(this).attr('src', '/content/b.gif');
+            });
+            $('#hdnIP').val('');
+            $('#hdnPlayerEnter').val('');
+            if ($('#txt1').is(':hidden') == false) {
+                $("#btnPlayer2").val("Oyuna Gir");
+                $("#btnPlayer2").show();
+            }
+        }
+
+    }
+    //function setNick(playerID) {
+    //    var player1 = $("#txt1").val().trim();
+    //    var player2 = $("#txt2").val().trim();
+    //    $('#hdnPlayerID').val(playerID)
+    //    if (playerID == 1 && player1 != "") {
+    //        $.post("home/saveCookie", { player: player1, playerID: playerID }, function (result) {
+    //            if (result == 'True') {
+    //                $("#txt1").hide();
+    //                $("#btnPlayer1").val("Oyundan Çık");
+    //                $("#btnPlayer2").hide();
+    //                $("#td2").hide();
+    //                $("#Name1").html('Player 1 ==> [' + player1.toUpperCase() + ']');
+    //            }
+    //        });
+    //    }
+    //    else if (playerID == 2 && player2 != "") {
+    //        $.post("home/saveCookie", { player: player2, playerID: playerID }, function (result) {                
+    //            if (result == 'True') {
+    //                $("#txt2").hide();
+    //                $("#btnPlayer2").val("Oyundan Çık");
+    //                $("#btnPlayer1").hide();
+    //                $("#td1").hide();
+    //                $("#Name2").html('Player 2 ==> [' + player2.toUpperCase() + ']');
+    //            }
+    //        });
+
+    //    }
+    //}
+    @*function delNick(playerID) {
+        //var player1 = @ViewBag.PlayerCookie;
+        //var player2 = @ViewBag.PlayerCookie;        
+        $('#hdnPlayerID').val('')
+        //if (playerID == 1 && player1 != "") {
+        if (playerID == 1) {
+            $.post("home/delCookie", { playerID: playerID }, function (result) {
+                if (result == 'True') {
+                    $("#txt1").show();
+                    $("#txt1").val('');
+                    $("#btnPlayer1").val("Oyuna Gir");
+                    $("#btnPlayer2").show();
+                    $("#td2").show();
+                    $("#Name1").html('Player 1 ==>');
+
+                    $('img[id^="img"]').each(function () {
+                        $(this).attr('src', '/content/b.gif');
+                    });
+                    $('#hdnIP').val('');
+                }
+            });
+        }
+        //else if (playerID == 2 && player2 != "") {
+        else if (playerID == 2) {
+            $.post("home/delCookie", { playerID: playerID }, function (result) {
+                if (result == 'True') {
+                    $("#txt2").show();
+                    $("#txt2").val('');
+                    $("#btnPlayer2").val("Oyuna Gir");
+                    $("#btnPlayer1").show();
+                    $("#td1").show();
+                    $("#Name2").html('Player 2');
+
+                    $('img[id^="img"]').each(function () {
+                        $(this).attr('src', '/content/b.gif');
+                    });
+                    $('#hdnIP').val('');
+                }
+            });
+
+        }
+    }*@       
+
+    $.connection.hub.start();
+</script>
+<div>
+    <img src="/content/me.jpg" style="width: 50px" />
+    <b><font color="red" size="5em"> Tic </font>- <font color="yellow" size="5em"> Tac  </font>- <font color="blue" size="5em">Toe</font></b></font>
+</div>
+
+<table>
+    <tr>
+        <td id="td1"><b id="Name1">Player 1</b>
+            <img src="/content/x.gif" border="0" width="30" height="30"><input type="text" id="txt1" /></td>
+        <td>
+            <input type="button" id="btnPlayer1" style="color: orange" value="Oyuna Gir" /></td>
+        <td id="td2"><b id="Name2">Player 2</b>
+            <img src="/content/o.gif" border="0" width="30" height="30"><input type="text" id="txt2" /></td>
+        <td>
+            <input type="button" id="btnPlayer2" style="color: orange" value="Oyuna Gir" /></td>
+        <td style="display:none" id="tdClear">
+            <input type="button" id="btnClear" style="color: orange" value="CacheTemizle" />
+        </td>
+    </tr>
+    <hr />
+</table>
+<hr />
+
+<br />
+@Html.Hidden("hdnIP")
+@Html.Hidden("hdnPlayerID")
+@Html.Hidden("hdnPlayerEnter")
+@*@Request.UserHostAddress*@
+
+<body>
+    <a id="100" href="">
+        <img src="/content/b.gif" border="0" width="40" height="40" id="img100"></a>
+    <img src="/content/v.gif" width="13" height="40">
+    <a id="010" href="">
+        <img src="/content/b.gif" border="0" width="40" height="40" id="img010"></a>
+    <img src="/content/v.gif" border="0" width="13" height="40">
+    <a id="001" href="">
+        <img src="/content/b.gif" border="0" width="40" height="40" id="img001"></a>
+    <br>
+    <img src="/content/h.gif" width="172" height="12"><br>
+    <a id="200" href="">
+        <img src="/content/b.gif" border="0" width="40" height="40" id="img200"></a>
+    <img src="/content/v.gif" width="13" height="40">
+    <a id="020" href="">
+        <img src="/content/b.gif" border="0" width="40" height="40" id="img020"></a>
+    <img src="/content/v.gif" width="13" height="40">
+    <a id="002" href="">
+        <img src="/content/b.gif" border="0" width="40" height="40" id="img002"></a>
+    <br>
+    <img src="/content/h.gif" width="172" height="12"><br>
+    <a id="300" href="">
+        <img src="/content/b.gif" border="0" width="40" height="40" id="img300"></a>
+    <img src="/content/v.gif" width="13" height="40">
+    <a id="030" href="">
+        <img src="/content/b.gif" border="0" width="40" height="40" id="img030"></a>
+    <img src="/content/v.gif" width="13" height="40">
+    <a id="003" href="">
+        <img src="/content/b.gif" border="0" width="40" height="40" id="img003"></a>
+
+</body>
